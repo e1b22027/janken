@@ -1,4 +1,4 @@
-package oit.is.z2626.kaizi.janken; //大事。//
+package oit.is.z2626.kaizi.janken.controller; //大事。//
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
