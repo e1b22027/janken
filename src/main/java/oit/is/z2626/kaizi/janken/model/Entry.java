@@ -38,4 +38,11 @@ public class Entry {
     this.users = users;
   }
 
+  public int sizeUsers() {
+    return users.size();
+  }
+
+  public String sizeUsersMessage() {
+    return "今" + this.sizeUsers() + "人がエントリー中";
+  }
 }
