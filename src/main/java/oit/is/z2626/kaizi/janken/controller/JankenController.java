@@ -41,7 +41,7 @@ public class JankenController {
     String loginUser = prin.getName();
     this.entry.addUser(loginUser);
     model.addAttribute("entry", this.entry);
-
+    model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
     return "janken.html";
   }
 
@@ -85,6 +85,7 @@ public class JankenController {
     model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);// CPUの手をランダムに変更。
     model.addAttribute("resultmsg", "結果" + resultmsg);
     model.addAttribute("entry", this.entry); // 認証のエントリーを追加
+    model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
     return "janken.html";
   }
 
