@@ -1,5 +1,6 @@
 package oit.is.z2626.kaizi.janken.controller; //大事。//
 
+import java.util.Random;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,10 @@ public class JankenController {
   @GetMapping("/jankengame")
   public String jankenEvent(@RequestParam String hand, Model model) {
     int playerhand = 0;
-    int cpuhand = 0; // CPUの手は必ずグーであるとしている。
+    Random rand = new Random();
+    int cpuhand = rand.nextInt(3); // CPUの手をランダムに変更。
     String resultmsg = "hogehoge";
+    String cpuhandmsg = "hogehoge";
     switch (hand) {
       case "Gu":
         playerhand = 0;
@@ -60,6 +63,17 @@ public class JankenController {
         playerhand = 2;
         break;
     }
+    switch (cpuhand) {
+      case 0:
+        cpuhandmsg = "Gu";
+        break;
+      case 1:
+        cpuhandmsg = "Choki";
+        break;
+      case 2:
+        cpuhandmsg = "Pa";
+        break;
+    }
     if ((playerhand - cpuhand + 3) % 3 == 0) {
       resultmsg = "Draw";
     } else if ((playerhand - cpuhand + 3) % 3 == 2) {
@@ -68,7 +82,7 @@ public class JankenController {
       resultmsg = "You Lose....";
     }
     model.addAttribute("playerhand", "あなたの手" + hand);
-    model.addAttribute("cpuhand", "相手の手" + "Gu");// CPUの手は必ずグーであるとしている。
+    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);// CPUの手をランダムに変更。
     model.addAttribute("resultmsg", "結果" + resultmsg);
     model.addAttribute("entry", this.entry); // 認証のエントリーを追加
     return "janken.html";
