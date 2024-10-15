@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import oit.is.z2626.kaizi.janken.model.Entry;
 import oit.is.z2626.kaizi.janken.model.Match;
 import oit.is.z2626.kaizi.janken.model.MatchMapper;
+import oit.is.z2626.kaizi.janken.model.User;
+import oit.is.z2626.kaizi.janken.model.UserMapper;
 
 /**
  * JankenController
@@ -28,9 +30,10 @@ public class JankenController {
 
   @Autowired
   private Entry entry;
-
   @Autowired
-  MatchMapper matchMapper;
+  private MatchMapper matchMapper;
+  @Autowired
+  private UserMapper userMapper;
 
   @PostMapping("/janken")
   public String enterEvent(@RequestParam String username, ModelMap model) {
@@ -49,9 +52,12 @@ public class JankenController {
     this.entry.addUser(loginUser);
     model.addAttribute("entry", this.entry);
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
-    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
 
+    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
     model.addAttribute("matches", matches);
+    ArrayList<User> users = userMapper.selectAllbyUsers();
+    model.addAttribute("users", users);
+
     return "janken.html";
   }
 

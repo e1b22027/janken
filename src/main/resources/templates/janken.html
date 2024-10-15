@@ -11,7 +11,19 @@
   Hi <nobr sec:authentication="name"></nobr>
 </h2>
 </p>
+<h2>
+  <p th:if="${users}">
+    エントリー
+  <div th:each="users,stat:${users}">
+    <tr>
+      <ul>
+        <li>[[${users.username}]]</li>
+      </ul>
+    </tr>
+  </div>
+  </p>
 
+</h2>
 
 <h2>
   <p th:if=" ${matches}">
