@@ -18,6 +18,7 @@ import oit.is.z2626.kaizi.janken.model.Match;
 import oit.is.z2626.kaizi.janken.model.MatchMapper;
 import oit.is.z2626.kaizi.janken.model.User;
 import oit.is.z2626.kaizi.janken.model.UserMapper;
+import oit.is.z2626.kaizi.janken.model.Janken;
 
 /**
  * JankenController
@@ -66,45 +67,18 @@ public class JankenController {
 
   @GetMapping("/jankengame")
   public String jankenEvent(@RequestParam String hand, Model model) {
-    int playerhand = 0;
+    Janken event = new Janken(hand);
+    int playerhand = event.translateHandsbyString(hand);
     Random rand = new Random();
-    int cpuhand = rand.nextInt(3); // CPUの手をランダムに変更。
-    String resultmsg = "hogehoge";
-    String cpuhandmsg = "hogehoge";
-    switch (hand) {
-      case "Gu":
-        playerhand = 0;
-        break;
-      case "Choki":
-        playerhand = 1;
-        break;
-      case "Pa":
-        playerhand = 2;
-        break;
-    }
-    switch (cpuhand) {
-      case 0:
-        cpuhandmsg = "Gu";
-        break;
-      case 1:
-        cpuhandmsg = "Choki";
-        break;
-      case 2:
-        cpuhandmsg = "Pa";
-        break;
-    }
-    if ((playerhand - cpuhand + 3) % 3 == 0) {
-      resultmsg = "Draw";
-    } else if ((playerhand - cpuhand + 3) % 3 == 2) {
-      resultmsg = "You Win!";
-    } else {
-      resultmsg = "You Lose....";
-    }
+    int cpuhand = rand.nextInt(3);
+    String resultmsg = event.judge(playerhand, cpuhand);
+    String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
+
     model.addAttribute("playerhand", "あなたの手" + hand);
-    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);// CPUの手をランダムに変更。
+    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
     model.addAttribute("resultmsg", "結果" + resultmsg);
-    model.addAttribute("entry", this.entry); // 認証のエントリーを追加
-    model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
+    // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
+    // model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
     return "janken.html";
   }
 
@@ -119,52 +93,30 @@ public class JankenController {
 
   @GetMapping("/fight")
   public String jankenEvent2(@RequestParam Integer id, @RequestParam String hand, Model model) {
-    int playerhand = 0;
-    Random rand = new Random();
-    int cpuhand = rand.nextInt(3);
     ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
     int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
-    String resultmsg = "hogehoge";
-    String cpuhandmsg = "hogehoge";
+
     Match match = new Match();
-    switch (hand) {
-      case "Gu":
-        playerhand = 0;
-        break;
-      case "Choki":
-        playerhand = 1;
-        break;
-      case "Pa":
-        playerhand = 2;
-        break;
-    }
-    switch (cpuhand) {
-      case 0:
-        cpuhandmsg = "Gu";
-        break;
-      case 1:
-        cpuhandmsg = "Choki";
-        break;
-      case 2:
-        cpuhandmsg = "Pa";
-        break;
-    }
-    if ((playerhand - cpuhand + 3) % 3 == 0) {
-      resultmsg = "Draw";
-    } else if ((playerhand - cpuhand + 3) % 3 == 2) {
-      resultmsg = "You Win!";
-    } else {
-      resultmsg = "You Lose....";
-    }
+
+    Janken event = new Janken(hand);
+    int playerhand = event.translateHandsbyString(hand);
+    Random rand = new Random();
+    int cpuhand = rand.nextInt(3);
+    String resultmsg = event.judge(playerhand, cpuhand);
+    String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
+
     match.setUser1(player.get(0).getId());
     match.setUser2(cpuid);
     match.setUser1Hand(hand);
     match.setUser2Hand(cpuhandmsg);
+
     matchMapper.insertMatchesInfo(match);
+
     model.addAttribute("playerhand", "あなたの手" + hand);
-    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);// CPUの手をランダムに変更。
+    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
     model.addAttribute("resultmsg", "結果" + resultmsg);
-    model.addAttribute("entry", this.entry); // 認証のエントリーを追加
+    // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
+
     ArrayList<Match> matches = matchMapper.selectAllbyMatches();
     model.addAttribute("matches", matches);
     model.addAttribute("id", clickedid);
