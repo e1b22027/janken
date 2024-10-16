@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -103,6 +104,12 @@ public class JankenController {
     model.addAttribute("entry", this.entry); // 認証のエントリーを追加
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
     return "janken.html";
+  }
+
+  @GetMapping("/match")
+  public String match(@RequestParam Integer id, ModelMap model) {
+    model.addAttribute("id", id);
+    return "match.html";
   }
 
 }

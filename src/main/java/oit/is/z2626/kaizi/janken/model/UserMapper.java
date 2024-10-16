@@ -7,6 +7,6 @@ import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper {
-  @Select("SELECT username from users")
+  @Select("SELECT * from users")
   ArrayList<User> selectAllbyUsers();
 }

@@ -14,13 +14,13 @@
 <h2>
   <p th:if="${users}">
     エントリー
-  <div th:each="users,stat:${users}">
-    <tr>
-      <ul>
-        <li>[[${users.username}]]</li>
-      </ul>
-    </tr>
+  <div>
+    <ul>
+      <li th:each="user : ${users}"><a th:href="@{/match(id=${user.id})}"> [[${user.name}]]</a></li>
+
+    </ul>
   </div>
+
   </p>
 
 </h2>
