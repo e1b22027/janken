@@ -9,4 +9,7 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper {
   @Select("SELECT * from users")
   ArrayList<User> selectAllbyUsers();
+
+  @Select("SELECT * from users where name =#{name}")
+  ArrayList<User> selectIdbyUsers(String name);
 }

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -35,6 +34,8 @@ public class JankenController {
   private MatchMapper matchMapper;
   @Autowired
   private UserMapper userMapper;
+  String loginUserName = "hogehoge";
+  int clickedid = -1;
 
   @PostMapping("/janken")
   public String enterEvent(@RequestParam String username, ModelMap model) {
@@ -49,8 +50,9 @@ public class JankenController {
 
   @GetMapping("/janken")
   public String sample38(Principal prin, ModelMap model) {
-    String loginUser = prin.getName();
-    this.entry.addUser(loginUser);
+    String user = prin.getName();
+    this.loginUserName = user;
+    this.entry.addUser(user);
     model.addAttribute("entry", this.entry);
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
 
@@ -108,7 +110,64 @@ public class JankenController {
 
   @GetMapping("/match")
   public String match(@RequestParam Integer id, ModelMap model) {
-    model.addAttribute("id", id);
+    int num = id;
+    clickedid = id;
+    model.addAttribute("id", num);
+
+    return "match.html";
+  }
+
+  @GetMapping("/fight")
+  public String jankenEvent2(@RequestParam Integer id, @RequestParam String hand, Model model) {
+    int playerhand = 0;
+    Random rand = new Random();
+    int cpuhand = rand.nextInt(3);
+    ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
+    int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
+    String resultmsg = "hogehoge";
+    String cpuhandmsg = "hogehoge";
+    Match match = new Match();
+    switch (hand) {
+      case "Gu":
+        playerhand = 0;
+        break;
+      case "Choki":
+        playerhand = 1;
+        break;
+      case "Pa":
+        playerhand = 2;
+        break;
+    }
+    switch (cpuhand) {
+      case 0:
+        cpuhandmsg = "Gu";
+        break;
+      case 1:
+        cpuhandmsg = "Choki";
+        break;
+      case 2:
+        cpuhandmsg = "Pa";
+        break;
+    }
+    if ((playerhand - cpuhand + 3) % 3 == 0) {
+      resultmsg = "Draw";
+    } else if ((playerhand - cpuhand + 3) % 3 == 2) {
+      resultmsg = "You Win!";
+    } else {
+      resultmsg = "You Lose....";
+    }
+    match.setUser1(player.get(0).getId());
+    match.setUser2(cpuid);
+    match.setUser1Hand(hand);
+    match.setUser2Hand(cpuhandmsg);
+    matchMapper.insertMatchesInfo(match);
+    model.addAttribute("playerhand", "あなたの手" + hand);
+    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);// CPUの手をランダムに変更。
+    model.addAttribute("resultmsg", "結果" + resultmsg);
+    model.addAttribute("entry", this.entry); // 認証のエントリーを追加
+    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
+    model.addAttribute("matches", matches);
+    model.addAttribute("id", clickedid);
     return "match.html";
   }
 
