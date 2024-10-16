@@ -1,6 +1,7 @@
+
 CREATE TABLE users (
-    id IDENTITY ,
-    userName VARCHAR NOT NULL
+   id IDENTITY,
+   name VARCHAR NOT NULL
 );
 
 CREATE TABLE matches (

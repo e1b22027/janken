@@ -1,7 +1,9 @@
 package oit.is.z2626.kaizi.janken.controller; //大事。//
 
 import java.util.Random;
+
 import java.security.Principal;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import oit.is.z2626.kaizi.janken.model.Entry;
+import oit.is.z2626.kaizi.janken.model.Match;
+import oit.is.z2626.kaizi.janken.model.MatchMapper;
+import oit.is.z2626.kaizi.janken.model.User;
+import oit.is.z2626.kaizi.janken.model.UserMapper;
 
 /**
  * JankenController
@@ -24,6 +30,12 @@ public class JankenController {
 
   @Autowired
   private Entry entry;
+  @Autowired
+  private MatchMapper matchMapper;
+  @Autowired
+  private UserMapper userMapper;
+  String loginUserName = "hogehoge";
+  int clickedid = -1;
 
   @PostMapping("/janken")
   public String enterEvent(@RequestParam String username, ModelMap model) {
@@ -38,10 +50,17 @@ public class JankenController {
 
   @GetMapping("/janken")
   public String sample38(Principal prin, ModelMap model) {
-    String loginUser = prin.getName();
-    this.entry.addUser(loginUser);
+    String user = prin.getName();
+    this.loginUserName = user;
+    this.entry.addUser(user);
     model.addAttribute("entry", this.entry);
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
+
+    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
+    model.addAttribute("matches", matches);
+    ArrayList<User> users = userMapper.selectAllbyUsers();
+    model.addAttribute("users", users);
+
     return "janken.html";
   }
 
@@ -87,6 +106,69 @@ public class JankenController {
     model.addAttribute("entry", this.entry); // 認証のエントリーを追加
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
     return "janken.html";
+  }
+
+  @GetMapping("/match")
+  public String match(@RequestParam Integer id, ModelMap model) {
+    int num = id;
+    clickedid = id;
+    model.addAttribute("id", num);
+
+    return "match.html";
+  }
+
+  @GetMapping("/fight")
+  public String jankenEvent2(@RequestParam Integer id, @RequestParam String hand, Model model) {
+    int playerhand = 0;
+    Random rand = new Random();
+    int cpuhand = rand.nextInt(3);
+    ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
+    int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
+    String resultmsg = "hogehoge";
+    String cpuhandmsg = "hogehoge";
+    Match match = new Match();
+    switch (hand) {
+      case "Gu":
+        playerhand = 0;
+        break;
+      case "Choki":
+        playerhand = 1;
+        break;
+      case "Pa":
+        playerhand = 2;
+        break;
+    }
+    switch (cpuhand) {
+      case 0:
+        cpuhandmsg = "Gu";
+        break;
+      case 1:
+        cpuhandmsg = "Choki";
+        break;
+      case 2:
+        cpuhandmsg = "Pa";
+        break;
+    }
+    if ((playerhand - cpuhand + 3) % 3 == 0) {
+      resultmsg = "Draw";
+    } else if ((playerhand - cpuhand + 3) % 3 == 2) {
+      resultmsg = "You Win!";
+    } else {
+      resultmsg = "You Lose....";
+    }
+    match.setUser1(player.get(0).getId());
+    match.setUser2(cpuid);
+    match.setUser1Hand(hand);
+    match.setUser2Hand(cpuhandmsg);
+    matchMapper.insertMatchesInfo(match);
+    model.addAttribute("playerhand", "あなたの手" + hand);
+    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);// CPUの手をランダムに変更。
+    model.addAttribute("resultmsg", "結果" + resultmsg);
+    model.addAttribute("entry", this.entry); // 認証のエントリーを追加
+    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
+    model.addAttribute("matches", matches);
+    model.addAttribute("id", clickedid);
+    return "match.html";
   }
 
 }

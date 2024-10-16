@@ -4,34 +4,42 @@
   Janken GAME!
 </h1>
 
-<h2>
-  <span th:text="${sizeMessage}"></span>
-  <!--eachは所謂for each．この場合roomオブジェクトのusersフィールドにあるすべてのデータを一通り表示する
-      thが指定されているので[]が不要になる-->
-  <ul>
-    <li th:each="user : ${entry.users}">[[${user}]]</li>
-
-  </ul>
-
-</h2>
-
 
 <p>
-<h1><span th:text="${username}"></span></h1><!--認証無しの場合-->
+
 <h2>
-  Hi
-  <nobr sec:authentication="name"></nobr>
+  Hi <nobr sec:authentication="name"></nobr>
 </h2>
 </p>
+<h2>
+  <p th:if="${users}">
+    エントリー
+  <div>
+    <ul>
+      <li th:each="user : ${users}"><a th:href="@{/match(id=${user.id})}"> [[${user.name}]]</a></li>
 
+    </ul>
+  </div>
 
-<h2><a href="/jankengame?hand=Gu">ぐー</a> <a href="/jankengame?hand=Choki">ちょき</a><a href="/jankengame?hand=Pa">ぱー</a>
-  <br>
+  </p>
 
-  [[${playerhand}]]<br>
-  [[${cpuhand}]]<br>
-  [[${resultmsg}]]<br>
+</h2>
 
+<h2>
+  <p th:if=" ${matches}">
+    試合結果
+  <div th:each="matches,stat:${matches}">
+    <tr>
+      <td>
+        id:[[${matches.id}]]
+        user1:[[${matches.user1}]]
+        user2:[[${matches.user2}]]
+        user1の手:[[${matches.user1Hand}]]
+        user2の手:[[${matches.user2Hand}]]
+      </td>
+    </tr>
+  </div>
+  </p>
 </h2>
 
 </p>
