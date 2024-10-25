@@ -95,6 +95,24 @@ public class JankenController {
     MatchInfo matchInfo = new MatchInfo(playerid, id, hand, true);// 自身の手の情報をinfoに格納する
     String enemyname = event.nameSerch(id);
 
+    if (enemyname == "CPU") {// CPU戦
+      int playerhand = event.translateHandsbyString(hand);
+      Random rand = new Random();
+      int cpuhand = rand.nextInt(3);
+      String resultmsg = event.judge(playerhand, cpuhand);
+      String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
+      Match match = new Match(playerid, id, hand, cpuhandmsg, false);
+      gameInfo.syncInsertMatch(match);
+      model.addAttribute("playerhand", "あなたの手" + hand);
+      model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
+      model.addAttribute("resultmsg", "結果" + resultmsg);
+
+      model.addAttribute("id", id);
+      return "match.html";
+    }
+
+    // Player戦
+
     if (matchInfoMapper.checkActive(playerid, id)) {
       int targetrecode = matchInfoMapper.selectIdActive(playerid, id);
       String player2hand = matchInfoMapper.selectUser1Hand(targetrecode);// 相手が出した手を取得する 必ず１つ分のデータしかないためStringにしている。
@@ -105,12 +123,14 @@ public class JankenController {
       matchInfoMapper.insertMatcheInfo(matchInfo);
     }
 
-    ArrayList<Match> matches = gameInfo.syncShowMatchesList();
+    ArrayList<Match> matches = gameInfo
+        .syncShowMatchesList();
     model.addAttribute("matches", matches);
     model.addAttribute("id", id);
     model.addAttribute("enemyname", enemyname);
 
     return "wait.html"; // 相手を選び手を選んだ際にDBにINSERTするより変更
+
   }
 
   @GetMapping("/step9")
