@@ -57,8 +57,10 @@ public class AsyncKekka {
 
   public void syncInsertMatch(Match match) {
     this.matchMapper.insertMatchesInfo(match);// 試合結果を格納する
-    this.dbUpdated = true;
-    this.id = this.syncActiveRecode();
+    if (match.getUser2() != 1) {// プレイヤー戦いの時のみtrueにする。 理由：Aが待ちの時にBがCPUと戦うとバグる
+      this.dbUpdated = true;
+      this.id = this.syncActiveRecode();
+    }
   }
 
   public Match syncSelectMatch(int id) {
