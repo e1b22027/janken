@@ -10,14 +10,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import oit.is.z2626.kaizi.janken.model.Entry;
 import oit.is.z2626.kaizi.janken.model.Match;
-import oit.is.z2626.kaizi.janken.model.MatchMapper;
+import oit.is.z2626.kaizi.janken.model.MatchInfo;
+import oit.is.z2626.kaizi.janken.model.MatchInfoMapper;
 import oit.is.z2626.kaizi.janken.model.User;
-import oit.is.z2626.kaizi.janken.model.UserMapper;
+import oit.is.z2626.kaizi.janken.service.AsyncKekka;
 import oit.is.z2626.kaizi.janken.model.Janken;
 
 /**
@@ -31,36 +32,32 @@ public class JankenController {
 
   @Autowired
   private Entry entry;
+
   @Autowired
-  private MatchMapper matchMapper;
+  private MatchInfoMapper matchInfoMapper;
+
   @Autowired
-  private UserMapper userMapper;
+  AsyncKekka gameInfo;
+
   String loginUserName = "hogehoge";
-  int clickedid = -1;
-
-  @PostMapping("/janken")
-  public String enterEvent(@RequestParam String username, ModelMap model) {
-    model.addAttribute("username", "Hi " + username);
-    return "janken.html";
-  }
-
-  // @GetMapping("/janken")
-  // public String janken_noname() {
-  // return "janken.html";
-  // }
 
   @GetMapping("/janken")
   public String sample38(Principal prin, ModelMap model) {
-    String user = prin.getName();
-    this.loginUserName = user;
-    this.entry.addUser(user);
+
+    String user = prin.getName();// 名前を取得
+    this.loginUserName = user; // グローバル変数にログインユーザー名を格納
+    this.entry.addUser(user); // entryにログインユーザーを登録
+
     model.addAttribute("entry", this.entry);
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
 
-    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
+    ArrayList<Match> matches = gameInfo.syncShowMatchesList();// 勝負ログを取得
     model.addAttribute("matches", matches);
-    ArrayList<User> users = userMapper.selectAllbyUsers();
+    ArrayList<User> users = gameInfo.syncShowUsersList();// 登録ユーザ情報を取得
     model.addAttribute("users", users);
+
+    ArrayList<MatchInfo> matchesInfo = matchInfoMapper.selectAlltrueActivebyMatchInfo(); // アクティブな試合情報を取得
+    model.addAttribute("activeMatchs", matchesInfo);
 
     return "janken.html";
   }
@@ -73,54 +70,54 @@ public class JankenController {
     int cpuhand = rand.nextInt(3);
     String resultmsg = event.judge(playerhand, cpuhand);
     String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
-
     model.addAttribute("playerhand", "あなたの手" + hand);
     model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
     model.addAttribute("resultmsg", "結果" + resultmsg);
-    // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
-    // model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
+
     return "janken.html";
   }
 
   @GetMapping("/match")
   public String match(@RequestParam Integer id, ModelMap model) {
+    Janken event = new Janken();
     int num = id;
-    clickedid = id;
-    model.addAttribute("id", num);
+    String enemyname = event.nameSerch(id);
 
+    model.addAttribute("id", num);
+    model.addAttribute("enemyname", enemyname);
     return "match.html";
   }
 
   @GetMapping("/fight")
   public String jankenEvent2(@RequestParam Integer id, @RequestParam String hand, Model model) {
-    ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
-    int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
+    Janken event = new Janken();
+    int playerid = gameInfo.syncShowUserId(loginUserName);// 自身のidを取得する
+    MatchInfo matchInfo = new MatchInfo(playerid, id, hand, true);// 自身の手の情報をinfoに格納する
+    String enemyname = event.nameSerch(id);
 
-    Match match = new Match();
+    if (matchInfoMapper.checkActive(playerid, id)) {
+      int targetrecode = matchInfoMapper.selectIdActive(playerid, id);
+      String player2hand = matchInfoMapper.selectUser1Hand(targetrecode);// 相手が出した手を取得する 必ず１つ分のデータしかないためStringにしている。
+      Match match = new Match(playerid, id, hand, player2hand, true);
+      gameInfo.syncInsertMatch(match);// 結果を格納する処理
+      matchInfoMapper.updateActive(targetrecode);// FALSEに更新
+    } else {
+      matchInfoMapper.insertMatcheInfo(matchInfo);
+    }
 
-    Janken event = new Janken(hand);
-    int playerhand = event.translateHandsbyString(hand);
-    Random rand = new Random();
-    int cpuhand = rand.nextInt(3);
-    String resultmsg = event.judge(playerhand, cpuhand);
-    String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
-
-    match.setUser1(player.get(0).getId());
-    match.setUser2(cpuid);
-    match.setUser1Hand(hand);
-    match.setUser2Hand(cpuhandmsg);
-
-    matchMapper.insertMatchesInfo(match);
-
-    model.addAttribute("playerhand", "あなたの手" + hand);
-    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
-    model.addAttribute("resultmsg", "結果" + resultmsg);
-    // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
-
-    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
+    ArrayList<Match> matches = gameInfo.syncShowMatchesList();
     model.addAttribute("matches", matches);
-    model.addAttribute("id", clickedid);
-    return "match.html";
+    model.addAttribute("id", id);
+    model.addAttribute("enemyname", enemyname);
+
+    return "wait.html"; // 相手を選び手を選んだ際にDBにINSERTするより変更
+  }
+
+  @GetMapping("/step9")
+  public SseEmitter sample59() {// htmlが読み込まれた時に呼び出される。
+    final SseEmitter sseEmitter = new SseEmitter();
+    this.gameInfo.asyncJankenKekka(sseEmitter);
+    return sseEmitter;
   }
 
 }

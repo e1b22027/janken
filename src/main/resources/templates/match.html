@@ -5,13 +5,12 @@
 </h1>
 
 <h1>
-  <nobr sec:authentication="name"></nobr>V.S.CPU
+  <nobr sec:authentication="name"></nobr>V.S.[[${enemyname}]]
 </h1>
 
 <h2><a th:href="@{/fight(id=${id},hand=Gu)}">ぐー</a>
   <a th:href="@{/fight(id=${id},hand=Choki)}">ちょき</a>
   <a th:href="@{/fight(id=${id},hand=Pa)}">ぱー</a>
-
   <br>
   [[${playerhand}]]<br>
   [[${cpuhand}]]<br>

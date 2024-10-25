@@ -1,35 +1,24 @@
 package oit.is.z2626.kaizi.janken.model;
 
-public class Match {
+public class MatchInfo {
   int id;
   int user1;
   int user2;
   String user1Hand;
-  String user2Hand;
   boolean isActive;
 
-  public Match(int id, int user1, int user2, String user1Hand, String user2Hand, boolean isActive) {
+  public MatchInfo(int user1, int user2, String user1Hand, boolean isActive) {
+    this.user1 = user1;
+    this.user2 = user2;
+    this.user1Hand = user1Hand;
+    this.isActive = isActive;
+  }
+
+  public MatchInfo(int id, int user1, int user2, String user1Hand, boolean isActive) {
     this.id = id;
     this.user1 = user1;
     this.user2 = user2;
     this.user1Hand = user1Hand;
-    this.user2Hand = user2Hand;
-    this.isActive = isActive;
-  }
-
-  public Match(int user1, int user2, String user1Hand, String user2Hand, boolean isActive) {
-    this.user1 = user1;
-    this.user2 = user2;
-    this.user1Hand = user1Hand;
-    this.user2Hand = user2Hand;
-    this.isActive = isActive;
-  }
-
-  public boolean isActive() {
-    return isActive;
-  }
-
-  public void setActive(boolean isActive) {
     this.isActive = isActive;
   }
 
@@ -65,12 +54,12 @@ public class Match {
     this.user1Hand = user1Hand;
   }
 
-  public String getUser2Hand() {
-    return user2Hand;
+  public boolean isActive() {
+    return isActive;
   }
 
-  public void setUser2Hand(String user2Hand) {
-    this.user2Hand = user2Hand;
+  public void setActive(boolean isActive) {
+    this.isActive = isActive;
   }
 
 }

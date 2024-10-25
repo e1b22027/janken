@@ -7,6 +7,10 @@ public class Janken {
     this.playerHand = hand;
   }
 
+  public Janken() {
+
+  }
+
   public String judge(int player1, int player2) {
     String msg = "hogehoge";
     if ((player1 - player2 + 3) % 3 == 0) {
@@ -49,5 +53,21 @@ public class Janken {
         break;
     }
     return num;
+  }
+
+  public String nameSerch(int id) {
+    String name = "hogehoge";
+    switch (id) {
+      case 1:
+        name = "CPU";
+        break;
+      case 2:
+        name = "ほんだ";
+        break;
+      case 3:
+        name = "いがき";
+        break;
+    }
+    return name;
   }
 }
