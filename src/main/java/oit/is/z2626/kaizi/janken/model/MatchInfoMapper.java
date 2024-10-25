@@ -22,10 +22,6 @@ public interface MatchInfoMapper {
   @Update("UPDATE matchinfo SET isActive = TRUE WHERE isActive =TRUE AND(user1=#{enemyid} AND user2 =#{playerid});")
   boolean checkActive(int playerid, int enemyid);
 
-  // @Select("SELECT user1Hand FROM matchinfo WHERE isActive=TRUE AND
-  // user1=#{enemyid} AND user2=#{playerid}")
-  // String selectUser1Hand(int playerid, int enemyid);
-
   @Select("SELECT user1Hand FROM matchinfo WHERE id=#{id}")
   String selectUser1Hand(int id);
 

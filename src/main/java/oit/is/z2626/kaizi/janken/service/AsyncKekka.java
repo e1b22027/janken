@@ -73,24 +73,23 @@ public class AsyncKekka {
     try {
       while (true) {
         if (false == dbUpdated) {
-          TimeUnit.MILLISECONDS.sleep(500);
+          TimeUnit.MILLISECONDS.sleep(50);
           continue;
         }
 
-        TimeUnit.MILLISECONDS.sleep(1000);
+        TimeUnit.MILLISECONDS.sleep(100);
         dbUpdated = false;
-        System.out.println(id);
+
         if (id != -1) {
           Match match = this.syncSelectMatch(this.id);// 該当レコードを出力。
           emitter.send(match);
           matchMapper.updateActive(this.id); // 更新作業
+          TimeUnit.MILLISECONDS.sleep(200);
+          id = -1;
         }
       }
     } catch (Exception e) {
       logger.warn("Exception:" + e.getClass().getName() + ":" + e.getMessage());
-      System.out.println("エラーです！！！エラーです！！");
-      System.out.println(e);
-      System.out.println("dbUpdated:" + dbUpdated);
     } finally {
       emitter.complete();
     }

@@ -10,17 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import oit.is.z2626.kaizi.janken.model.Entry;
 import oit.is.z2626.kaizi.janken.model.Match;
-// import oit.is.z2626.kaizi.janken.model.MatchMapper;
 import oit.is.z2626.kaizi.janken.model.MatchInfo;
 import oit.is.z2626.kaizi.janken.model.MatchInfoMapper;
 import oit.is.z2626.kaizi.janken.model.User;
-//import oit.is.z2626.kaizi.janken.model.UserMapper;
 import oit.is.z2626.kaizi.janken.service.AsyncKekka;
 import oit.is.z2626.kaizi.janken.model.Janken;
 
@@ -35,33 +32,22 @@ public class JankenController {
 
   @Autowired
   private Entry entry;
-  // @Autowired
-  // private MatchMapper matchMapper;
+
   @Autowired
   private MatchInfoMapper matchInfoMapper;
-  // @Autowired
-  // private UserMapper userMapper;
+
   @Autowired
   AsyncKekka gameInfo;
 
   String loginUserName = "hogehoge";
 
-  // @PostMapping("/janken")
-  // public String enterEvent(@RequestParam String username, ModelMap model) {
-  // model.addAttribute("username", "Hi " + username);
-  // return "janken.html";
-  // }
-
-  // @GetMapping("/janken")
-  // public String janken_noname() {
-  // return "janken.html";
-  // }
-
   @GetMapping("/janken")
   public String sample38(Principal prin, ModelMap model) {
-    String user = prin.getName(); // 名前を取得
+
+    String user = prin.getName();// 名前を取得
     this.loginUserName = user; // グローバル変数にログインユーザー名を格納
     this.entry.addUser(user); // entryにログインユーザーを登録
+
     model.addAttribute("entry", this.entry);
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
 
@@ -87,26 +73,16 @@ public class JankenController {
     model.addAttribute("playerhand", "あなたの手" + hand);
     model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
     model.addAttribute("resultmsg", "結果" + resultmsg);
-    // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
-    // model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
+
     return "janken.html";
   }
 
   @GetMapping("/match")
   public String match(@RequestParam Integer id, ModelMap model) {
+    Janken event = new Janken();
     int num = id;
-    String enemyname = "hogehoge";
-    switch (id) {
-      case 1:
-        enemyname = "CPU";
-        break;
-      case 2:
-        enemyname = "ほんだ";
-        break;
-      case 3:
-        enemyname = "いがき";
-        break;
-    }
+    String enemyname = event.nameSerch(id);
+
     model.addAttribute("id", num);
     model.addAttribute("enemyname", enemyname);
     return "match.html";
@@ -114,64 +90,26 @@ public class JankenController {
 
   @GetMapping("/fight")
   public String jankenEvent2(@RequestParam Integer id, @RequestParam String hand, Model model) {
+    Janken event = new Janken();
+    int playerid = gameInfo.syncShowUserId(loginUserName);// 自身のidを取得する
+    MatchInfo matchInfo = new MatchInfo(playerid, id, hand, true);// 自身の手の情報をinfoに格納する
+    String enemyname = event.nameSerch(id);
 
-    // ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
-    // int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
-
-    // Match match = new Match();
-
-    // Janken event = new Janken(hand);
-    // int playerhand = event.translateHandsbyString(hand);
-    // Random rand = new Random();
-    // // int cpuhand = rand.nextInt(3);
-    // String resultmsg = event.judge(playerhand, cpuhand);
-    // String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
-    try {
-      int playerid = gameInfo.syncShowUserId(loginUserName);// 自身のidを取得する
-      MatchInfo matchInfo = new MatchInfo(playerid, id, hand, true);// 自身の手の情報をinfoに格納する
-      if (matchInfoMapper.checkActive(playerid, id)) {
-        int targetrecode = matchInfoMapper.selectIdActive(playerid, id);
-        String player2hand = matchInfoMapper.selectUser1Hand(targetrecode);// 相手が出した手を取得する 必ず１つ分のデータしかないためStringにしている。
-        Match match = new Match(playerid, id, hand, player2hand, true);
-        gameInfo.syncInsertMatch(match);// 結果を格納する処理
-        matchInfoMapper.updateActive(targetrecode);// FALSEに更新
-      } else {
-        matchInfoMapper.insertMatcheInfo(matchInfo);
-      }
-    } catch (Exception e) {
-      System.out.println("エラー！！！！");
-      System.out.println(e);
+    if (matchInfoMapper.checkActive(playerid, id)) {
+      int targetrecode = matchInfoMapper.selectIdActive(playerid, id);
+      String player2hand = matchInfoMapper.selectUser1Hand(targetrecode);// 相手が出した手を取得する 必ず１つ分のデータしかないためStringにしている。
+      Match match = new Match(playerid, id, hand, player2hand, true);
+      gameInfo.syncInsertMatch(match);// 結果を格納する処理
+      matchInfoMapper.updateActive(targetrecode);// FALSEに更新
+    } else {
+      matchInfoMapper.insertMatcheInfo(matchInfo);
     }
-
-    String enemyname = "hogehoge";
-    switch (id) {
-      case 1:
-        enemyname = "CPU";
-        break;
-      case 2:
-        enemyname = "ほんだ";
-        break;
-      case 3:
-        enemyname = "いがき";
-        break;
-    }
-    // match.setUser1(player.get(0).getId());
-    // match.setUser2(cpuid);
-    // match.setUser1Hand(hand);
-    // match.setUser2Hand(cpuhandmsg);
-
-    // matchMapper.insertMatchesInfo(match);
-
-    // model.addAttribute("playerhand", "あなたの手" + hand);
-    // model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
-    // model.addAttribute("resultmsg", "結果" + resultmsg);
-    // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
 
     ArrayList<Match> matches = gameInfo.syncShowMatchesList();
     model.addAttribute("matches", matches);
     model.addAttribute("id", id);
     model.addAttribute("enemyname", enemyname);
-    // return "match.html";
+
     return "wait.html"; // 相手を選び手を選んだ際にDBにINSERTするより変更
   }
 
