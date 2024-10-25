@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+//import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import oit.is.z2626.kaizi.janken.model.Entry;
@@ -42,11 +42,11 @@ public class JankenController {
 
   String loginUserName = "hogehoge";
 
-  @PostMapping("/janken")
-  public String enterEvent(@RequestParam String username, ModelMap model) {
-    model.addAttribute("username", "Hi " + username);
-    return "janken.html";
-  }
+  // @PostMapping("/janken")
+  // public String enterEvent(@RequestParam String username, ModelMap model) {
+  // model.addAttribute("username", "Hi " + username);
+  // return "janken.html";
+  // }
 
   // @GetMapping("/janken")
   // public String janken_noname() {
@@ -55,16 +55,19 @@ public class JankenController {
 
   @GetMapping("/janken")
   public String sample38(Principal prin, ModelMap model) {
-    String user = prin.getName();
-    this.loginUserName = user;
-    this.entry.addUser(user);
+    String user = prin.getName(); // 名前を取得
+    this.loginUserName = user; // グローバル変数にログインユーザー名を格納
+    this.entry.addUser(user); // entryにログインユーザーを登録
     model.addAttribute("entry", this.entry);
     model.addAttribute("sizeMessage", this.entry.sizeUsersMessage());
 
-    ArrayList<Match> matches = matchMapper.selectAllbyMatches();
+    ArrayList<Match> matches = matchMapper.selectAllbyMatches();// 勝負ログを取得
     model.addAttribute("matches", matches);
-    ArrayList<User> users = userMapper.selectAllbyUsers();
+    ArrayList<User> users = userMapper.selectAllbyUsers();// 登録ユーザ情報を取得
     model.addAttribute("users", users);
+
+    ArrayList<MatchInfo> matchesInfo = matchInfoMapper.selectAlltrueActivebyMatchInfo(); // アクティブな試合情報を取得
+    model.addAttribute("activeMatchs", matchesInfo);
 
     return "janken.html";
   }
