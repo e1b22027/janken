@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import oit.is.z2626.kaizi.janken.model.Entry;
 import oit.is.z2626.kaizi.janken.model.Match;
 import oit.is.z2626.kaizi.janken.model.MatchMapper;
+import oit.is.z2626.kaizi.janken.model.MatchInfo;
+import oit.is.z2626.kaizi.janken.model.MatchInfoMapper;
 import oit.is.z2626.kaizi.janken.model.User;
 import oit.is.z2626.kaizi.janken.model.UserMapper;
 import oit.is.z2626.kaizi.janken.model.Janken;
@@ -34,9 +36,11 @@ public class JankenController {
   @Autowired
   private MatchMapper matchMapper;
   @Autowired
+  private MatchInfoMapper matchInfoMapper;
+  @Autowired
   private UserMapper userMapper;
+
   String loginUserName = "hogehoge";
-  int clickedid = -1;
 
   @PostMapping("/janken")
   public String enterEvent(@RequestParam String username, ModelMap model) {
@@ -73,7 +77,6 @@ public class JankenController {
     int cpuhand = rand.nextInt(3);
     String resultmsg = event.judge(playerhand, cpuhand);
     String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
-
     model.addAttribute("playerhand", "あなたの手" + hand);
     model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
     model.addAttribute("resultmsg", "結果" + resultmsg);
@@ -85,42 +88,70 @@ public class JankenController {
   @GetMapping("/match")
   public String match(@RequestParam Integer id, ModelMap model) {
     int num = id;
-    clickedid = id;
+    String enemyname = "hogehoge";
+    switch (id) {
+      case 1:
+        enemyname = "CPU";
+        break;
+      case 2:
+        enemyname = "ほんだ";
+        break;
+      case 3:
+        enemyname = "いがき";
+        break;
+    }
     model.addAttribute("id", num);
-
+    model.addAttribute("enemyname", enemyname);
     return "match.html";
   }
 
   @GetMapping("/fight")
   public String jankenEvent2(@RequestParam Integer id, @RequestParam String hand, Model model) {
+    // ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
+    // int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
+
+    // Match match = new Match();
+
+    // Janken event = new Janken(hand);
+    // int playerhand = event.translateHandsbyString(hand);
+    // Random rand = new Random();
+    // // int cpuhand = rand.nextInt(3);
+    // String resultmsg = event.judge(playerhand, cpuhand);
+    // String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
     ArrayList<User> player = userMapper.selectIdbyUsers(loginUserName);
-    int cpuid = id; // CPUのDB上のIDをそのまま書いてる。
+    int playerid = player.get(0).getId();
+    MatchInfo matchInfo = new MatchInfo(playerid, id, hand, true);
+    matchInfoMapper.insertMatcheInfo(matchInfo);
+    String enemyname = "hogehoge";
+    switch (id) {
+      case 1:
+        enemyname = "CPU";
+        break;
+      case 2:
+        enemyname = "ほんだ";
+        break;
+      case 3:
+        enemyname = "いがき";
+        break;
+    }
+    // match.setUser1(player.get(0).getId());
+    // match.setUser2(cpuid);
+    // match.setUser1Hand(hand);
+    // match.setUser2Hand(cpuhandmsg);
 
-    Match match = new Match();
+    // matchMapper.insertMatchesInfo(match);
 
-    Janken event = new Janken(hand);
-    int playerhand = event.translateHandsbyString(hand);
-    Random rand = new Random();
-    int cpuhand = rand.nextInt(3);
-    String resultmsg = event.judge(playerhand, cpuhand);
-    String cpuhandmsg = event.translateHandsbyInteger(cpuhand);
-
-    match.setUser1(player.get(0).getId());
-    match.setUser2(cpuid);
-    match.setUser1Hand(hand);
-    match.setUser2Hand(cpuhandmsg);
-
-    matchMapper.insertMatchesInfo(match);
-
-    model.addAttribute("playerhand", "あなたの手" + hand);
-    model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
-    model.addAttribute("resultmsg", "結果" + resultmsg);
+    // model.addAttribute("playerhand", "あなたの手" + hand);
+    // model.addAttribute("cpuhand", "相手の手" + cpuhandmsg);
+    // model.addAttribute("resultmsg", "結果" + resultmsg);
     // model.addAttribute("entry", this.entry); // 認証のエントリーを追加
 
     ArrayList<Match> matches = matchMapper.selectAllbyMatches();
     model.addAttribute("matches", matches);
-    model.addAttribute("id", clickedid);
-    return "match.html";
+    model.addAttribute("id", id);
+    model.addAttribute("enemyname", enemyname);
+    // return "match.html";
+    return "wait.html"; // 相手を選び手を選んだ際にDBにINSERTするより変更
   }
 
 }
