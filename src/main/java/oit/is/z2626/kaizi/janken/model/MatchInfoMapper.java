@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface MatchInfoMapper {
@@ -14,4 +15,20 @@ public interface MatchInfoMapper {
 
   @Select("SELECT * FROM matchinfo WHERE isActive=TRUE;")
   ArrayList<MatchInfo> selectAlltrueActivebyMatchInfo();
+
+  @Select("SELECT id FROM matchinfo WHERE isActive =TRUE AND (user1=#{enemyid} AND user2 =#{playerid});")
+  int selectIdActive(int playerid, int enemyid);
+
+  @Update("UPDATE matchinfo SET isActive = TRUE WHERE isActive =TRUE AND(user1=#{enemyid} AND user2 =#{playerid});")
+  boolean checkActive(int playerid, int enemyid);
+
+  // @Select("SELECT user1Hand FROM matchinfo WHERE isActive=TRUE AND
+  // user1=#{enemyid} AND user2=#{playerid}")
+  // String selectUser1Hand(int playerid, int enemyid);
+
+  @Select("SELECT user1Hand FROM matchinfo WHERE id=#{id}")
+  String selectUser1Hand(int id);
+
+  @Update("UPDATE matchinfo SET isActive =FALSE where id =#{id}")
+  void updateActive(int id);
 }
